@@ -1,0 +1,114 @@
+
+% ===========================================================================
+% Title:
+% ---------------------------------------------------------------------------
+% to create Type I fonts type "dvips -P cmz -t letter <filename>"
+% ===========================================================================
+\documentclass[11pt]{article}       %--- LATEX 2e base
+\usepackage{latexsym}               %--- LATEX 2e base
+%---------------- Wide format -----------------------------------------------
+\textwidth=6in \textheight=9in \oddsidemargin=0.25in
+\evensidemargin=0.25in \topmargin=-0.5in
+%--------------- Def., Theorem, Proof, etc. ---------------------------------
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\newtheorem{property}{Property}
+\newtheorem{observation}{Observation}
+\newtheorem{fact}{Fact}
+\newenvironment{proof}           {\noindent{\bf Proof.} }%
+                                 {\null\hfill$\Box$\par\medskip}
+%--------------- Algorithm --------------------------------------------------
+\newtheorem{algX}{Algorithm}
+\newenvironment{algorithm}       {\begin{algX}\begin{em}}%
+                                 {\par\noindent --- End of Algorithm ---
+                                 \end{em}\end{algX}}
+\newcommand{\step}[2]            {\begin{list}{}
+                                  {  \setlength{\topsep}{0cm}
+                                     \setlength{\partopsep}{0cm}
+                                     \setlength{\leftmargin}{0.8cm}
+                                     \setlength{\labelwidth}{0.7cm}
+                                     \setlength{\labelsep}{0.1cm}    }
+                                  \item[#1]#2    \end{list}}
+                                 % usage: \begin{algorithm} \label{xyz}
+                                 %        ... \step{(1)}{...} ...
+                                 %        \end{algorithm}
+%--------------- Figures ----------------------------------------------------
+\usepackage{graphicx}
+
+\newcommand{\includeFig}[3]      {\begin{figure}[htb] \begin{center}
+                                 \includegraphics
+                                 [width=4in,keepaspectratio] %comment this line to disable scaling
+                                 {#2}\caption{\label{#1}#3} \end{center} \end{figure}}
+                                 % usage: \includeFig{label}{file}{caption}
+
+
+% ===========================================================================
+\begin{document}
+% ===========================================================================
+
+% ############################################################################
+% Title
+% ############################################################################
+
+\title{LITERATURE REVIEW: Optimizing CRVE with batched matrix algebra on GPUs}
+
+
+% ############################################################################
+% Author(s) (no blank lines !)
+\author{
+% ############################################################################
+Scott McNeil\\
+Department of Economics\\
+Carleton University\\
+Ottawa, Canada K1S 5B6\\
+{\em scott.mcneil@carleton.ca}
+% ############################################################################
+} % end-authors
+% ############################################################################
+
+\maketitle
+
+
+
+% ############################################################################
+\section{Introduction} \label{intro}
+% ############################################################################
+
+As a common task in science and statistics, considerable work has been put into optimizing GEneral Matrix Multiplication (GEMM), particularly via Graphical Processing Units (GPU). Because of data transfer overhead, most linear algebera algorithms for GPUs only offer an advantages when matrices are large. However, batched proccessing of matrices can provide speed improvements for large groups of small matrix multiplciations\cite{masliah2016high}.
+
+Cluster robust variance estimation (CRVE) is a statisitcal technique for for correcting inference when data appears in distinct groups--such as time period, industry or even high school classroom . The CRVE is an important--and underused--statisitical technique for econometrics \cite{moulton1990illustration}. However, it can be computationally expensive for three reasons. First, calculation of the CRVE requires a set of non-trivial matrix multiplications and scales poorly with both the number of observations and the number of regressors. Second, CRVE has shown to be best when combined with bootstrap resampling, especially the wild boostrap, which involves recalculating the CRVE hundreds if not thousands of times \cite{cameron2008bootstrap}. Finally, reasoning about the CRVE often involves Monte Carlo simulations, with tens of thousands of replications.
+
+The challenge to optimizing the CRVE on a GU is the matrix multiplications involved are almost always very small. However, it is possible to recombine the matrix calculations and compute them via a batched calculation. This especially provides benefits for when used with a bootstrap.
+
+% ############################################################################
+\section{Literature Review} \label{litrev}
+% ############################################################################
+
+The CRVE is a generalization of the heteroskedacitiy-robust estimators proposed by White \cite{white1980hc}, with the original CRVE estimator proposed by \cite{froot1989consistent}. The use of the CRVE with bootstrapping was proposed by Cameron, Gelbach and Miller, often referred to the wild cluster bootstrap (WCB) \cite{cameron2008bootstrap}. A good review of the CRVE is also provided by Cameron, Gelbach and Milelr \cite{cameron2010robust}.
+
+There are a number of software implementatioins of CRVE. This includes an implementation in the standard distribution of the Stata statistical language \cite{rogers1994regression} and the Sandwich package for the R programming language \cite{zeileis2004sandwitch}. Finally, the wild cluster bootstrap is available through boottest package for Stata \cite{roodman2015boottest}.
+
+There have been a number of attempts to optimize similar econometric techniques. A general review of parallel programming for econometrics is available in \cite{guo2012econgpu}. Of particular interest, \cite{lopez2016gpu} provides a GPU-optimized version of the block boostrap, which makes use of the sweep operator to overcome limitations. This solution is similar to the problems inherent optimizing the CRVE and WCB, however the the exact implementation is not directly applicable.
+
+There has been considerable work done to optimize dense linear algebra (DLA) algorithms for parallel processing. For a review of this, including batched processes, see \cite{dongarra2016parallel}. Implementations of batched DLA algorithms are currently availble both in NVIDIA's cuBLAS library \cite{nvidia2013basic} and the MAGMA library from University of Tennessee's Innovative Computing Laboratory (ICL) \cite{agullo2009numerical}. The thread blocking used in the MAGMA batched routine due to \cite{nath2010improved}. This paper will rely on the batched routines in the MAGMA library.
+
+A number of applications of batched GEMM implementations have been presented. For example, matrix exponentiation can be formulated as a batched GEMM \cite{lopez2014batch}. High-order finite element methods can also be computed via batched GEMMs using the cuBLAS library, however, this method shows a drop-off in performance when the size of the matrices are not a multiple of 16 \cite{jhurani2015gemm}. This method can also be reformuated as a tensor contraction \cite{shi2016tensor}. Conversely, the performance of tensor contractions have been shown be improved through batched GEMMs using the MAGMA library \cite{abdelfattah2016high}.
+
+Further, batched GEMMs are incorporated for a number of other batched DLA algorithms, including QR decomposition, Cholsky decomposition and LU factorizations \cite{haidar2015batched} \cite{dong2016batchfact} \cite{abdelfattah2015batchcholesky} \cite{dong2014factor} \cite{dong2014chols}. Batched processing has also been used for vector reduction and vector scaling \cite{polok2012fast}.
+
+The primary implementation this paper will rely on is the batched GEMM algorithms developed by the ICL group for the MAGMA library. In particular, the group has optimized multiplication of squares matrices of size 32 \cite{dongarra2016performance}. They showed that tuning of thread block size is an important aspect for batch GEMMs with smalle matrices, which will also be important for optmizing the CRVE. A second papers explores optimizing GEMMs for square matrices as small as size 16, which this paper will also attempt to incorportate \cite{masliah2016high}.
+
+Further work from the ICL group looks at and batches of variable sized matrices \cite{abdelfattah2016variablebatch}. This is not directly relevant since the size of the matrices at each bootstrap replication will neccesarily be indentical. 
+
+% ############################################################################
+% Bibliography
+% ############################################################################
+\bibliographystyle{plain}
+\bibliography{my-bibliography}     %loads my-bibliography.bib
+
+% ============================================================================
+\end{document}
+% ============================================================================
+

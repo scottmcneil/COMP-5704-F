@@ -27,19 +27,21 @@
 </table>
 
 <hr noshade="noshade">
-<h2><font color="#005128">Project Title: </font><font><font color="#005128">Speeding Up Wild Clustered Bootstrap with Batched GEMMs on GPUs</font></font></h2>
+<h2><font color="#005128">Project Title: </font><font><font color="#005128">Optimizing CRVE with batched matrix algebra on GPUs</font></font></h2>
 
 <h2><font color="#005128">Name: Scott McNeil<br>
 </font></h2>
 
 <hr noshade="noshade">
 <b><font color="#005128">Project Outline:</font></b>
-<p>The objective for this project is to use parallel computing to optimize the Wild Cluster Bootstrap, due to <a href="http://www.mitpressjournals.org/doi/pdf/10.1162/rest.90.3.414">Cameron, Gelbach and Miller (2008)</a>.</p> <p>Specifically, the goal is to reformulate the problem as a series of batched General Matrix to Matrix Multiplications (GEMMS), due to work done by <a href="http://icl.cs.utk.edu/news_pub/submissions/main.pdf">Masliah et. al. (2016)</a> and <a href="http://ac.els-cdn.com/S074373151400166X/1-s2.0-S074373151400166X-main.pdf?_tid=7fb2ebe0-84d5-11e6-a842-00000aacb362&acdnat=1474996498_9e43fbbd33a7eed4fb8d49018a3d9b31">Jhurani and Mullowney (2015)</a>. For benchmarking and comparison, the paper will rely on a series of implementations and conceptualizations, including <a href="https://www.cambridge.org/core/services/aop-cambridge-core/content/view/1AAC5F31AB01CE60405A8B4D3FF90D4C/S0266466612000655a.pdf/a-warp-speed-method-for-conducting-monte-carlo-experiments-involving-bootstrap-estimators.pdf">Giacomini, Politis and White (2013)</a>, <a href="https://ideas.repec.org/c/boc/bocode/s458121.html">Roodman (2015)</a> and <a href="http://journals.plos.org/plosone/article/asset?id=10.1371/journal.pone.0131333.PDF">Neto (2015)</a>.</p>
-<p><b><font color="#005128">Startup Paper(s):</font></b>
-  <ul>
-    <li><a href="http://icl.cs.utk.edu/news_pub/submissions/main.pdf">Masliah et. al. (2016)</a></li>
-    <li><a href="http://ac.els-cdn.com/S074373151400166X/1-s2.0-S074373151400166X-main.pdf?_tid=7fb2ebe0-84d5-11e6-a842-00000aacb362&acdnat=1474996498_9e43fbbd33a7eed4fb8d49018a3d9b31">Jhurani and Mullowney (2015)</a></li>
-  </ul>
+
+<p>As a common task in science and statistics, considerable work has been put into optimizing GEneral Matrix Multiplication (GEMM), particularly via Graphical Processing Units (GPU). Because of data transfer overhead, most linear algebera algorithms for GPUs only offer an advantages when matrices are large. However, batched proccessing of matrices can provide speed improvements for large groups of small matrix multiplciations, due to <a href="http://icl.cs.utk.edu/news_pub/submissions/main.pdf">Masliah, et. al.</a></p>
+
+<p>Cluster robust variance estimation (CRVE) is a statisitcal technique for for correcting inference when data appears in distinct groups--such as time period, industry or even high school classroom . The CRVE is an important--and underused--statisitical technique for econometrics. However, it can be computationally expensive for three reasons. First, calculation of the CRVE requires a set of non-trivial matrix multiplications and scales poorly with both the number of observations and the number of regressors. Second, CRVE has shown to be best when combined with bootstrap resampling, especially the wild boostrap, which involves recalculating the CRVE hundreds if not thousands of times. Finally, reasoning about the CRVE often involves Monte Carlo simulations, with tens of thousands of replications.</p>
+
+<p>The challenge to optimizing the CRVE on a GU is the matrix multiplications involved are almost always very small. However, it is possible to recombine the matrix calculations and compute them via a batched calculation. This especially provides benefits for when used with a bootstrap.</p>
+
+<p><b><font color="#005128">Startup Paper(s): </font></b><a href="http://icl.cs.utk.edu/news_pub/submissions/main.pdf">Masliah et. al. (2016)</a>
 
 <p><b><font color="#005128">Deliverables:</font></b></p>
 
